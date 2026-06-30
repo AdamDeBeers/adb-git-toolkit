@@ -1,0 +1,21 @@
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# Build
+build/
+bin/
+obj/
+
+# Temporary
+*.tmp
+*.bak
+*.log
+
+# Shell
+*.swp
