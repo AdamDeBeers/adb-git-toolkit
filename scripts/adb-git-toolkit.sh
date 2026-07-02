@@ -28,11 +28,11 @@ require_git_repo() {
 
 show_status() {
   header
-  echo "[ Git Status ]"
+  echo "[ Repository Status ]"
   echo
   require_git_repo || return
 
-  git status --short
+  git --no-pager status --short
   echo
   git status --branch --short
 
@@ -41,22 +41,108 @@ show_status() {
 
 show_log() {
   header
-  echo "[ Recent Commits ]"
+  echo "[ Git Log / History ]"
   echo
   require_git_repo || return
 
-  git log --oneline --decorate -10
+  git --no-pager log --oneline --decorate -10
 
   pause
 }
 
 show_remote() {
   header
-  echo "[ Git Remote ]"
+  echo "[ Remote Information ]"
   echo
   require_git_repo || return
 
   git remote -v
+
+  pause
+}
+
+show_diff() {
+  header
+  echo "[ Git Diff ]"
+  echo
+
+  require_git_repo || return
+
+  if [[ -z "$(git status --porcelain)" ]]; then
+    echo "Working tree is clean."
+  else
+    git --no-pager diff --color
+  fi
+
+  pause
+}
+
+create_backup() {
+  header
+  echo "[ Create Backup ]"
+  echo
+
+  require_git_repo || return
+
+  if [[ -z "$(git status --porcelain)" ]]; then
+    echo "No changes detected."
+    echo
+    echo "Nothing to commit."
+    pause
+    return
+  fi
+
+  echo "Modified files:"
+  echo
+  git --no-pager status --short
+
+  echo
+  echo "--------------------------------------"
+  echo
+  echo "Backup name"
+  echo "(Press Enter for automatic name)"
+  echo
+
+  read -rp "> " backup_name
+
+  if [[ -z "$backup_name" ]]; then
+    backup_name="Backup $(date '+%Y-%m-%d %H:%M')"
+  fi
+
+  echo
+  echo "Backup summary"
+  echo "--------------------------------------"
+  echo
+  echo "Backup name:"
+  echo "$backup_name"
+  echo
+  echo "Files:"
+  git --no-pager status --short
+  echo
+
+  read -rp "Continue? [Y/n]: " confirm
+
+  if [[ "$confirm" =~ ^[Nn]$ ]]; then
+    echo
+    echo "Backup cancelled."
+    pause
+    return
+  fi
+
+  echo
+  echo "Adding files..."
+  git add .
+
+  echo "Creating backup..."
+  if git commit -m "$backup_name"; then
+    echo
+    echo "Backup created successfully."
+    echo
+    git --no-pager log -1 --oneline
+  else
+    echo
+    echo "ERROR: Backup failed."
+  fi
 
   pause
 }
@@ -71,7 +157,7 @@ safe_pull() {
     echo "Local changes detected."
     echo "Commit, stash, or clean them before pulling."
     echo
-    git status --short
+    git --no-pager status --short
     pause
     return
   fi
@@ -104,7 +190,7 @@ repository_health() {
     echo "[OK] Working tree clean"
   else
     echo "[WARN] Local changes detected"
-    git status --short
+    git --no-pager status --short
   fi
 
   echo
@@ -137,11 +223,15 @@ repository_health() {
 main_menu() {
   while true; do
     header
-    echo "1) Git status"
-    echo "2) Recent commits"
-    echo "3) Remote URL"
-    echo "4) Safe pull"
-    echo "5) Repository health"
+    echo "1) Repository Status"
+    echo "2) Git Log / History"
+    echo "3) Remote Information"
+    echo "4) Git Diff"
+    echo "5) Create Backup"
+    echo "6) Push to GitHub"
+    echo "7) Safe Pull"
+    echo "8) Repository Health"
+    echo "9) About"
     echo "0) Exit"
     echo
     read -rp "Choose option: " choice
@@ -150,10 +240,34 @@ main_menu() {
       1) show_status ;;
       2) show_log ;;
       3) show_remote ;;
-      4) safe_pull ;;
-      5) repository_health ;;
-      0) clear; exit 0 ;;
-      *) echo "Invalid option"; pause ;;
+      4) show_diff ;;
+      5) create_backup ;;
+      6)
+        header
+        echo "[ Push to GitHub ]"
+        echo
+        echo "Coming soon..."
+        pause
+        ;;
+      7) safe_pull ;;
+      8) repository_health ;;
+      9)
+        header
+        echo "ADB Git Toolkit"
+        echo "Version : $APP_VERSION"
+        echo
+        echo "Open-source Git toolkit for Klipper & Voron."
+        echo
+        pause
+        ;;
+      0)
+        clear
+        exit 0
+        ;;
+      *)
+        echo "Invalid option"
+        pause
+        ;;
     esac
   done
 }
