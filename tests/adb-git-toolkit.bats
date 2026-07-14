@@ -250,6 +250,65 @@ commit_count() {
   [ "$(cat "$REPO_DIR/file.txt")" = "v1" ]
 }
 
+# --- setup_repo_files -----------------------------------------------------
+
+# Builds a fake toolkit install directory ($1) containing the example
+# files, and echoes it so the caller can pass it as HOME to the test.
+make_fake_toolkit_home() {
+  local fake_home="$1"
+  local examples_dir="$fake_home/.local/share/adb-git-toolkit/examples"
+  mkdir -p "$examples_dir"
+  echo "*.log" > "$examples_dir/gitignore.klipper"
+  echo "* text=auto eol=lf" > "$examples_dir/gitattributes.klipper"
+}
+
+@test "setup_repo_files reports nothing to do when both files already exist" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  touch "$REPO_DIR/.gitignore" "$REPO_DIR/.gitattributes"
+  run_fn setup_repo_files $'\n'
+  [[ "$output" == *"already has both"* ]]
+}
+
+@test "setup_repo_files errors when toolkit examples are not installed" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  local fake_home="$BATS_TEST_TMPDIR/empty-home"
+  mkdir -p "$fake_home"
+  run bash -c "cd '$REPO_DIR' && HOME='$fake_home' source '$LIB' && printf '\n' | setup_repo_files"
+  [[ "$output" == *"example files not found"* ]]
+}
+
+@test "setup_repo_files copies both missing files when confirmed" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  local fake_home="$BATS_TEST_TMPDIR/toolkit-home"
+  make_fake_toolkit_home "$fake_home"
+  run bash -c "cd '$REPO_DIR' && HOME='$fake_home' source '$LIB' && printf 'y\n' | setup_repo_files"
+  [[ "$output" == *"Added .gitignore"* ]]
+  [[ "$output" == *"Added .gitattributes"* ]]
+  [ -f "$REPO_DIR/.gitignore" ]
+  [ -f "$REPO_DIR/.gitattributes" ]
+}
+
+@test "setup_repo_files cancels when confirm is no" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  local fake_home="$BATS_TEST_TMPDIR/toolkit-home"
+  make_fake_toolkit_home "$fake_home"
+  run bash -c "cd '$REPO_DIR' && HOME='$fake_home' source '$LIB' && printf 'no\n' | setup_repo_files"
+  [[ "$output" == *"Setup cancelled"* ]]
+  [ ! -f "$REPO_DIR/.gitignore" ]
+  [ ! -f "$REPO_DIR/.gitattributes" ]
+}
+
+@test "setup_repo_files only copies the file that is actually missing" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  echo "existing" > "$REPO_DIR/.gitignore"
+  local fake_home="$BATS_TEST_TMPDIR/toolkit-home"
+  make_fake_toolkit_home "$fake_home"
+  run bash -c "cd '$REPO_DIR' && HOME='$fake_home' source '$LIB' && printf 'y\n' | setup_repo_files"
+  [[ "$output" != *"Added .gitignore"* ]]
+  [[ "$output" == *"Added .gitattributes"* ]]
+  [ "$(cat "$REPO_DIR/.gitignore")" = "existing" ]
+}
+
 # --- check_for_updates -------------------------------------------------------
 
 @test "check_for_updates errors when TOOLKIT_ROOT is not a git checkout" {

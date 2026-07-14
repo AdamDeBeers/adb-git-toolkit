@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ADB Git Toolkit (ADB GT) is an open-source Git/GitHub workflow toolkit for Klipper-based 3D printers (Voron and similar), with Mainsail integration via Moonraker's update_manager. The project is in early development (v0.2.0), MIT licensed.
 
-The toolkit is a single interactive Bash script: `scripts/adb-git-toolkit.sh`. It presents a numbered menu (`main_menu`) driving one function per action: repository status, log/history, remote info, diff, create backup (commit), push to GitHub, safe pull, switch branch, quick stash, repository health, configuration restore, check for updates, and about. There is no build step or package manager. Verification is done both by exercising the menu against real (throwaway) Git repos and by the `tests/adb-git-toolkit.bats` suite (see below).
+The toolkit is a single interactive Bash script: `scripts/adb-git-toolkit.sh`. It presents a numbered menu (`main_menu`) driving one function per action: repository status, log/history, remote info, diff, create backup (commit), push to GitHub, safe pull, switch branch, quick stash, repository health, configuration restore, check for updates, setup repo files, and about. There is no build step or package manager. Verification is done both by exercising the menu against real (throwaway) Git repos and by the `tests/adb-git-toolkit.bats` suite (see below).
 
 ## CI
 
@@ -31,7 +31,7 @@ This is deliberate: the installed copy at `~/.local/share/adb-git-toolkit` is a 
 ## Architecture / conventions
 
 - **Single-file menu app**: `scripts/adb-git-toolkit.sh` uses `set -u` and a `header()`/`pause()` pattern for consistent screen redraws between menu actions. Every action function starts with `header`, calls `require_git_repo` (except pure display actions where relevant), does its work, and ends with `pause`.
-- **New menu actions**: add a new function following the existing pattern (`header` → guard → work → `pause`), then wire it into the `case` statement inside `main_menu` — remember to renumber the trailing `About` entry (currently `13`) if you insert before it.
+- **New menu actions**: add a new function following the existing pattern (`header` → guard → work → `pause`), then wire it into the `case` statement inside `main_menu` — remember to renumber the trailing `About` entry (currently `14`) if you insert before it.
 - **No abstraction layer over git**: functions shell out directly to `git` (e.g., `git --no-pager status --short`, `git --no-pager diff --color`). Keep this direct style — don't introduce a wrapper/library layer for a script this size.
 - **Destructive actions require typed confirmation, not just Enter**: `restore_configuration()` requires the user to type the word `restore` (not just accept a `[Y/n]` default) before overwriting working-tree files, since it can discard local edits. Follow this pattern for any future action that overwrites files or history.
 - `check_for_updates()` operates on `TOOLKIT_ROOT` (`$HOME/.local/share/adb-git-toolkit`, matching `install.sh`'s `INSTALL_DIR`) — i.e. the *installed* copy, not necessarily the script currently executing. It fetches, compares local `HEAD` against `@{u}`, and only ever fast-forward merges (`git merge --ff-only`) after confirming the install has no local changes.

@@ -621,6 +621,69 @@ restore_configuration() {
   pause
 }
 
+setup_repo_files() {
+  header
+  echo "[ Setup Repo Files ]"
+  echo
+
+  require_git_repo || return
+
+  repo_root="$(git rev-parse --show-toplevel)"
+
+  missing_gitignore=0
+  missing_gitattributes=0
+
+  [[ -f "$repo_root/.gitignore" ]] || missing_gitignore=1
+  [[ -f "$repo_root/.gitattributes" ]] || missing_gitattributes=1
+
+  if [[ "$missing_gitignore" -eq 0 && "$missing_gitattributes" -eq 0 ]]; then
+    echo "This repo already has both .gitignore and .gitattributes."
+    pause
+    return
+  fi
+
+  echo "This repo is missing:"
+  echo
+  [[ "$missing_gitignore" -eq 1 ]] && echo "  - .gitignore"
+  [[ "$missing_gitattributes" -eq 1 ]] && echo "  - .gitattributes"
+  echo
+
+  source_gitignore="$TOOLKIT_ROOT/examples/gitignore.klipper"
+  source_gitattributes="$TOOLKIT_ROOT/examples/gitattributes.klipper"
+
+  if [[ ! -f "$source_gitignore" && ! -f "$source_gitattributes" ]]; then
+    echo "ERROR: Toolkit example files not found at $TOOLKIT_ROOT/examples/."
+    echo "Reinstall with install.sh, or copy them manually from the toolkit repo."
+    pause
+    return
+  fi
+
+  read -rp "Copy ADB GT's starter Klipper .gitignore/.gitattributes into this repo? [Y/n]: " confirm
+
+  if [[ "$confirm" =~ ^[Nn][Oo]?$ ]]; then
+    echo
+    echo "Setup cancelled."
+    pause
+    return
+  fi
+
+  echo
+  if [[ "$missing_gitignore" -eq 1 && -f "$source_gitignore" ]]; then
+    cp "$source_gitignore" "$repo_root/.gitignore"
+    echo "Added .gitignore"
+  fi
+
+  if [[ "$missing_gitattributes" -eq 1 && -f "$source_gitattributes" ]]; then
+    cp "$source_gitattributes" "$repo_root/.gitattributes"
+    echo "Added .gitattributes"
+  fi
+
+  echo
+  echo "Review the new file(s) with Git Diff, then use Create Backup to commit them."
+
+  pause
+}
+
 check_for_updates() {
   header
   echo "[ Check for Updates ]"
@@ -711,7 +774,8 @@ main_menu() {
     echo "10) Repository Health"
     echo "11) Configuration Restore"
     echo "12) Check for Updates"
-    echo "13) About"
+    echo "13) Setup Repo Files"
+    echo "14) About"
     echo " 0) Exit"
     echo
     read -rp "Choose option: " choice
@@ -729,7 +793,8 @@ main_menu() {
       10) repository_health ;;
       11) restore_configuration ;;
       12) check_for_updates ;;
-      13)
+      13) setup_repo_files ;;
+      14)
         header
         echo "ADB Git Toolkit"
         echo "Version : $APP_VERSION"

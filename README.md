@@ -20,6 +20,7 @@ ADB Git Toolkit aims to make Git and GitHub integration effortless for Klipper u
 - Quick Stash
 - Repository Health check
 - Configuration Restore
+- Setup Repo Files (starter .gitignore/.gitattributes)
 - Automatic updates
 - One-command installer
 - Mainsail integration

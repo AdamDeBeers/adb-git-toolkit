@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Setup Repo Files menu action: detects a missing `.gitignore`/`.gitattributes` in the current repo and offers to copy in the toolkit's starter versions (`examples/gitignore.klipper`, `examples/gitattributes.klipper`) from its own installation. Only fills in what's actually missing, never overwrites.
 - Create Backup now also warns and requires typing `commit large files` to proceed if any changed/untracked file is 5 MB or larger (catches accidental `klippy.log`/firmware `.bin` commits that bloat repo size permanently).
 
 ## [v0.2.0] - 2026-07-14

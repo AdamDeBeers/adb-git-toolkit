@@ -69,7 +69,13 @@ It fetches from the toolkit's remote, compares the local commit against the upst
 
 It refuses to update if the installed copy has local changes, and reports a clear error if the install isn't a Git checkout or has no upstream configured.
 
-## 13) About
+## 13) Setup Repo Files
+
+Checks the current repo for a missing `.gitignore` and/or `.gitattributes`. If both are already present, it says so and does nothing. Otherwise it lists what's missing and offers to copy in the toolkit's starter versions ([examples/gitignore.klipper](../examples/gitignore.klipper) and [examples/gitattributes.klipper](../examples/gitattributes.klipper)) from the toolkit's own installation (`~/.local/share/adb-git-toolkit`, like **Check for Updates**). Only copies the file(s) that are actually missing — it never overwrites an existing `.gitignore` or `.gitattributes`.
+
+If the toolkit's own example files aren't found at that location (e.g. installed via the no-remote plain-copy fallback), it reports an error instead of guessing. Review the added file(s) with **Git Diff**, then **Create Backup** to commit them.
+
+## 14) About
 
 Prints the toolkit name and version. Read-only.
 
