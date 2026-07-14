@@ -16,6 +16,8 @@ ADB Git Toolkit aims to make Git and GitHub integration effortless for Klipper u
 - Git History
 - Git Diff
 - Safe Pull
+- Switch Branch
+- Quick Stash
 - Repository Health check
 - Configuration Restore
 - Automatic updates

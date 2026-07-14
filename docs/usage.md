@@ -32,11 +32,22 @@ Pushes the current branch to a configured remote. If only one remote is configur
 
 Runs `git pull`, but only if the working tree is clean. If there are local changes, it lists them and stops instead of risking a conflicted merge.
 
-## 8) Repository Health
+## 8) Switch Branch
+
+Lists local branches (marking the current one) and checks out the one you pick by number. Refuses to run if the working tree has uncommitted changes — commit them with **Create Backup** or set them aside with **Quick Stash** first. Picking the branch you're already on, or entering `0`, cancels without doing anything.
+
+## 9) Quick Stash
+
+A single action that does one of two things depending on the working tree:
+- If there are uncommitted changes, it offers to stash them (`git stash push -u`, which includes untracked files) after showing what would be stashed.
+- If the working tree is clean and a stash exists, it offers to pop the most recent one (`git stash pop`).
+- If the working tree is clean and there's nothing stashed, it says so and does nothing.
+
+## 10) Repository Health
 
 A read-only summary: repository name, current branch, remote name, upstream tracking branch, last commit, working-tree cleanliness, whether upstream is configured, whether the remote is reachable (`git ls-remote`), and whether `HEAD` is detached.
 
-## 9) Configuration Restore
+## 11) Configuration Restore
 
 Lets you pick one of the last 10 commits and checks out **all tracked files** from that commit into the working tree (`git checkout <commit> -- .`). This does not rewrite history — it only changes working-tree file contents, staged and ready to review.
 
@@ -46,7 +57,7 @@ Safety rails:
 
 After restoring, use **Git Diff** to review what changed, then **Create Backup** to commit the restore if you want to keep it.
 
-## 10) Check for Updates
+## 12) Check for Updates
 
 Unlike the other actions, this operates on the **toolkit's own installation** (`~/.local/share/adb-git-toolkit`), not the repository you're currently in. It only works if the toolkit was installed via `install.sh` from a repo with a Git remote (see the main [README](../README.md#installation)).
 
@@ -56,7 +67,7 @@ It fetches from the toolkit's remote, compares the local commit against the upst
 
 It refuses to update if the installed copy has local changes, and reports a clear error if the install isn't a Git checkout or has no upstream configured.
 
-## 11) About
+## 13) About
 
 Prints the toolkit name and version. Read-only.
 

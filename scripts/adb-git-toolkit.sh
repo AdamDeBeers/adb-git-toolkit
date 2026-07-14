@@ -297,6 +297,156 @@ push_to_github() {
   pause
 }
 
+switch_branch() {
+  header
+  echo "[ Switch Branch ]"
+  echo
+
+  require_git_repo || return
+
+  if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Uncommitted changes detected."
+    echo "Commit them with Create Backup, or set them aside with Quick Stash,"
+    echo "before switching branches."
+    echo
+    git --no-pager status --short
+    pause
+    return
+  fi
+
+  mapfile -t branches < <(git branch --format='%(refname:short)')
+
+  if [[ ${#branches[@]} -eq 0 ]]; then
+    echo "No local branches found."
+    pause
+    return
+  fi
+
+  current_branch="$(git branch --show-current)"
+
+  echo "Local branches:"
+  echo
+  local i=1
+  for b in "${branches[@]}"; do
+    if [[ "$b" == "$current_branch" ]]; then
+      echo "$i) $b (current)"
+    else
+      echo "$i) $b"
+    fi
+    i=$((i + 1))
+  done
+
+  echo
+  read -rp "Switch to which branch? (number, 0 to cancel): " selection
+
+  if [[ -z "$selection" || "$selection" == "0" ]]; then
+    echo
+    echo "Switch cancelled."
+    pause
+    return
+  fi
+
+  if ! [[ "$selection" =~ ^[0-9]+$ ]] || (( selection < 1 || selection > ${#branches[@]} )); then
+    echo
+    echo "Invalid selection."
+    pause
+    return
+  fi
+
+  selected_branch="${branches[$((selection - 1))]}"
+
+  if [[ "$selected_branch" == "$current_branch" ]]; then
+    echo
+    echo "Already on '$selected_branch'."
+    pause
+    return
+  fi
+
+  echo
+  if git checkout "$selected_branch"; then
+    echo
+    echo "Switched to '$selected_branch'."
+  else
+    echo
+    echo "ERROR: Switch failed."
+  fi
+
+  pause
+}
+
+quick_stash() {
+  header
+  echo "[ Quick Stash ]"
+  echo
+
+  require_git_repo || return
+
+  mapfile -t stashes < <(git stash list)
+
+  if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Uncommitted changes:"
+    echo
+    git --no-pager status --short
+    echo
+
+    read -rp "Stash these changes (including untracked files)? [Y/n]: " confirm
+
+    if [[ "$confirm" =~ ^[Nn][Oo]?$ ]]; then
+      echo
+      echo "Stash cancelled."
+      pause
+      return
+    fi
+
+    echo
+    if git stash push -u -m "Quick stash $(date '+%Y-%m-%d %H:%M')"; then
+      echo
+      echo "Changes stashed. Use Quick Stash again on a clean tree to pop them."
+    else
+      echo
+      echo "ERROR: Stash failed."
+    fi
+
+    pause
+    return
+  fi
+
+  if [[ ${#stashes[@]} -eq 0 ]]; then
+    echo "Working tree is clean and there are no stashes."
+    pause
+    return
+  fi
+
+  echo "Working tree is clean. Stashes:"
+  echo
+  local i=1
+  for s in "${stashes[@]}"; do
+    echo "$i) $s"
+    i=$((i + 1))
+  done
+
+  echo
+  read -rp "Pop the most recent stash? [Y/n]: " confirm
+
+  if [[ "$confirm" =~ ^[Nn][Oo]?$ ]]; then
+    echo
+    echo "Nothing changed."
+    pause
+    return
+  fi
+
+  echo
+  if git stash pop; then
+    echo
+    echo "Stash applied."
+  else
+    echo
+    echo "ERROR: Stash pop failed (possible conflict). Resolve manually."
+  fi
+
+  pause
+}
+
 repository_health() {
   header
   echo "[ Repository Health ]"
@@ -520,10 +670,12 @@ main_menu() {
     echo "5) Create Backup"
     echo "6) Push to GitHub"
     echo "7) Safe Pull"
-    echo "8) Repository Health"
-    echo "9) Configuration Restore"
-    echo "10) Check for Updates"
-    echo "11) About"
+    echo "8) Switch Branch"
+    echo "9) Quick Stash"
+    echo "10) Repository Health"
+    echo "11) Configuration Restore"
+    echo "12) Check for Updates"
+    echo "13) About"
     echo "0) Exit"
     echo
     read -rp "Choose option: " choice
@@ -536,10 +688,12 @@ main_menu() {
       5) create_backup ;;
       6) push_to_github ;;
       7) safe_pull ;;
-      8) repository_health ;;
-      9) restore_configuration ;;
-      10) check_for_updates ;;
-      11)
+      8) switch_branch ;;
+      9) quick_stash ;;
+      10) repository_health ;;
+      11) restore_configuration ;;
+      12) check_for_updates ;;
+      13)
         header
         echo "ADB Git Toolkit"
         echo "Version : $APP_VERSION"

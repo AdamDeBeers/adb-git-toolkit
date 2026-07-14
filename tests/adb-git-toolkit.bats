@@ -235,6 +235,79 @@ commit_count() {
   [[ "$output" == *"is not a Git checkout"* ]]
 }
 
+# --- switch_branch -----------------------------------------------------------
+
+@test "switch_branch refuses with uncommitted changes" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  echo "x" > "$REPO_DIR/file.txt"
+  run_fn switch_branch $'\n'
+  [[ "$output" == *"Uncommitted changes detected"* ]]
+}
+
+@test "switch_branch cancels on selection 0" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  git -C "$REPO_DIR" branch other
+  run_fn switch_branch $'0\n'
+  [[ "$output" == *"Switch cancelled"* ]]
+}
+
+@test "switch_branch rejects an invalid selection" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  git -C "$REPO_DIR" branch other
+  run_fn switch_branch $'99\n'
+  [[ "$output" == *"Invalid selection"* ]]
+}
+
+@test "switch_branch checks out the selected branch" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  git -C "$REPO_DIR" branch other
+  mapfile -t branches < <(git -C "$REPO_DIR" branch --format='%(refname:short)')
+  local idx
+  for i in "${!branches[@]}"; do
+    if [[ "${branches[$i]}" == "other" ]]; then
+      idx=$((i + 1))
+    fi
+  done
+  run_fn switch_branch "$idx"$'\n'
+  [[ "$output" == *"Switched to 'other'"* ]]
+  [ "$(git -C "$REPO_DIR" branch --show-current)" = "other" ]
+}
+
+# --- quick_stash ---------------------------------------------------------------
+
+@test "quick_stash stashes uncommitted changes when confirmed" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  echo "x" > "$REPO_DIR/file.txt"
+  run_fn quick_stash $'y\n'
+  [[ "$output" == *"Changes stashed"* ]]
+  [ -z "$(git -C "$REPO_DIR" status --porcelain)" ]
+  [ "$(git -C "$REPO_DIR" stash list | wc -l | tr -d ' ')" -eq 1 ]
+}
+
+@test "quick_stash cancels when confirm is no" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  echo "x" > "$REPO_DIR/file.txt"
+  run_fn quick_stash $'no\n'
+  [[ "$output" == *"Stash cancelled"* ]]
+  [ -n "$(git -C "$REPO_DIR" status --porcelain)" ]
+}
+
+@test "quick_stash reports nothing to do on a clean tree with no stashes" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  run_fn quick_stash $'\n'
+  [[ "$output" == *"no stashes"* ]]
+}
+
+@test "quick_stash pops the most recent stash on a clean tree when confirmed" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  echo "x" > "$REPO_DIR/file.txt"
+  git -C "$REPO_DIR" stash push -u -m "test stash"
+
+  run_fn quick_stash $'y\n'
+  [[ "$output" == *"Stash applied"* ]]
+  [ -n "$(git -C "$REPO_DIR" status --porcelain)" ]
+}
+
 # --- repository_health (read-only smoke test) --------------------------------
 
 @test "repository_health prints a summary" {
