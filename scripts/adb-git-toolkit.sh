@@ -203,7 +203,7 @@ push_to_github() {
     return
   fi
 
-  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)"
 
   echo "Remote : $remote_name"
   echo "Branch : $branch_name"
@@ -253,7 +253,7 @@ repository_health() {
   repo_name="$(basename "$(git rev-parse --show-toplevel)")"
   branch_name="$(git branch --show-current)"
   remote_name="$(git remote | head -n 1)"
-  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)"
   last_commit="$(git log -1 --pretty=format:'%h %s' 2>/dev/null || echo 'No commits yet')"
 
   echo "Repository : $repo_name"

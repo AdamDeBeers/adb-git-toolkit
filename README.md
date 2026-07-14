@@ -90,3 +90,7 @@ scripts/         Core shell scripts
 install.sh       Installer
 uninstall.sh     Uninstaller
 ```
+
+## License
+
+[MIT](LICENSE)
