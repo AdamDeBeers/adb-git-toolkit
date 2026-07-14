@@ -10,11 +10,13 @@
 setup() {
   export TERM=dumb
 
-  # Build a "library" copy of the script with the final main_menu
-  # invocation removed, so sourcing it only defines functions/vars.
+  # Build a "library" copy of the script with the trailing CLI dispatch
+  # block removed (everything from the "# --- CLI dispatch" marker to EOF),
+  # so sourcing it only defines functions/vars and doesn't try to interpret
+  # this harness's own $1/$# as an action name.
   SCRIPT="$BATS_TEST_DIRNAME/../scripts/adb-git-toolkit.sh"
   LIB="$BATS_TEST_TMPDIR/lib.sh"
-  head -n -1 "$SCRIPT" > "$LIB"
+  sed '/^# --- CLI dispatch/,$d' "$SCRIPT" > "$LIB"
 
   REPO_DIR="$BATS_TEST_TMPDIR/repo"
   mkdir -p "$REPO_DIR"
@@ -440,4 +442,51 @@ make_fake_toolkit_home() {
   [ "$status" -eq 0 ]
   [[ "$output" == *"Repository :"* ]]
   [[ "$output" == *"Branch"* ]]
+}
+
+# --- CLI dispatch (uses the real, unstripped $SCRIPT) -----------------------
+
+@test "CLI dispatch: --help prints usage and exits 0" {
+  run bash "$SCRIPT" --help
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage:"* ]]
+  [[ "$output" == *"status"* ]]
+}
+
+@test "CLI dispatch: --version prints app name and version and exits 0" {
+  run bash "$SCRIPT" --version
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"ADB Git Toolkit"* ]]
+}
+
+@test "CLI dispatch: unknown action prints an error and exits 1" {
+  run bash "$SCRIPT" bogus-action
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"Unknown action: bogus-action"* ]]
+  [[ "$output" == *"Usage:"* ]]
+}
+
+@test "CLI dispatch: status action runs and exits without hanging" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  run bash -c "cd '$REPO_DIR' && bash '$SCRIPT' status"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Repository Status"* ]]
+}
+
+@test "CLI dispatch: status action errors cleanly outside a git repository" {
+  local outside="$BATS_TEST_TMPDIR/not-a-repo-cli"
+  mkdir -p "$outside"
+  run bash -c "cd '$outside' && bash '$SCRIPT' status"
+  [[ "$output" == *"This is not a Git repository"* ]]
+}
+
+@test "CLI dispatch: no arguments still opens the interactive menu (backward compatible)" {
+  # Note: read -rp only prints its prompt text when stdin is a real TTY, so
+  # "Choose option:" itself never shows up in piped output -- assert on the
+  # menu body (echoed unconditionally) instead.
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  run bash -c "cd '$REPO_DIR' && printf '0\n' | bash '$SCRIPT'"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"1) Repository Status"* ]]
+  [[ "$output" == *"14) About"* ]]
 }

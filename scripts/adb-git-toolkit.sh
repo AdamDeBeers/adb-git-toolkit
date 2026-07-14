@@ -33,6 +33,7 @@ else
 fi
 
 pause() {
+  [[ -t 0 ]] || return 0
   echo
   read -rp "Press Enter to continue..."
 }
@@ -844,4 +845,61 @@ main_menu() {
   done
 }
 
-main_menu
+# --- CLI dispatch -----------------------------------------------------------
+# (tests/adb-git-toolkit.bats strips everything from this marker onward when
+# building a sourceable "library" copy of this script's functions, since $1
+# and $# here would otherwise collide with the test harness's own args.)
+
+print_usage() {
+  cat <<EOF
+Usage: $(basename "$0") [ACTION]
+
+Run with no arguments to open the interactive menu. Or run a single
+action directly and exit -- useful for scripting or a Moonraker macro:
+
+  status    Repository Status
+  log       Git Log / History
+  remote    Remote Information
+  diff      Git Diff
+  backup    Create Backup
+  push      Push to GitHub
+  pull      Safe Pull
+  branch    Switch Branch
+  stash     Quick Stash
+  health    Repository Health
+  restore   Configuration Restore
+  update    Check for Updates
+  init      Setup Repo Files
+
+  -h, --help      Show this help
+  -v, --version   Show version
+EOF
+}
+
+if [[ $# -gt 0 ]]; then
+  case "$1" in
+    -h|--help) print_usage; exit 0 ;;
+    -v|--version) echo "$APP_NAME $APP_VERSION"; exit 0 ;;
+    status) show_status ;;
+    log) show_log ;;
+    remote) show_remote ;;
+    diff) show_diff ;;
+    backup) create_backup ;;
+    push) push_to_github ;;
+    pull) safe_pull ;;
+    branch) switch_branch ;;
+    stash) quick_stash ;;
+    health) repository_health ;;
+    restore) restore_configuration ;;
+    update) check_for_updates ;;
+    init) setup_repo_files ;;
+    *)
+      echo "Unknown action: $1"
+      echo
+      print_usage
+      exit 1
+      ;;
+  esac
+else
+  main_menu
+fi

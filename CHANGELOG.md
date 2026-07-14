@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Non-interactive CLI mode: `adb-git-toolkit <action>` (e.g. `status`, `backup`, `push`, `health`) runs one action and exits, plus `--help`/`--version`. Running with no arguments still opens the interactive menu as before. The final "Press Enter to continue" pause is now skipped automatically whenever stdin isn't a real terminal, so scripted/cron invocations never hang.
 - `[OK]`/`[WARN]` tags and `ERROR:` messages throughout the toolkit are now colored green/yellow/red when connected to a real terminal, honoring `NO_COLOR` and staying plain text when output isn't a TTY (e.g. piped or logged).
 - Create Backup now shows a full diff of tracked changes (not just filenames) before asking for the commit message. Configuration Restore shows a diff preview of exactly what a restore would change before requiring the typed `restore` confirmation.
 - Setup Repo Files menu action: detects a missing `.gitignore`/`.gitattributes` in the current repo and offers to copy in the toolkit's starter versions (`examples/gitignore.klipper`, `examples/gitattributes.klipper`) from its own installation. Only fills in what's actually missing, never overwrites.

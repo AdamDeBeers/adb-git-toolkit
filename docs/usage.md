@@ -82,3 +82,29 @@ Prints the toolkit name and version. Read-only.
 ## 0) Exit
 
 Quits the menu.
+
+## Non-interactive CLI mode
+
+Running the toolkit with no arguments opens the interactive menu as described above (unchanged). Running it with a single action name instead runs just that action once and exits -- useful for scripting or wiring into a Moonraker macro:
+
+```bash
+adb-git-toolkit status    # Repository Status
+adb-git-toolkit log       # Git Log / History
+adb-git-toolkit remote    # Remote Information
+adb-git-toolkit diff      # Git Diff
+adb-git-toolkit backup    # Create Backup
+adb-git-toolkit push      # Push to GitHub
+adb-git-toolkit pull      # Safe Pull
+adb-git-toolkit branch    # Switch Branch
+adb-git-toolkit stash     # Quick Stash
+adb-git-toolkit health    # Repository Health
+adb-git-toolkit restore   # Configuration Restore
+adb-git-toolkit update    # Check for Updates
+adb-git-toolkit init      # Setup Repo Files
+adb-git-toolkit --help    # Usage summary
+adb-git-toolkit --version # Version
+```
+
+An unrecognized action prints an error and usage summary, then exits with status 1.
+
+All the same guard clauses and confirmations apply in CLI mode -- destructive actions like Create Backup or Configuration Restore still prompt for confirmation on stdin, so piping input (or running them from something that isn't watching for a prompt) works the same as answering interactively. The one difference: the final "Press Enter to continue" pause is automatically skipped whenever stdin isn't a real terminal (e.g. cron, a Moonraker macro, or piped input), so these never hang waiting for a keypress that will never come.
