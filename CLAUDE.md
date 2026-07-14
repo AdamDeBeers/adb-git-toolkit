@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ADB Git Toolkit (ADB GT) is an open-source Git/GitHub workflow toolkit for Klipper-based 3D printers (Voron and similar), with Mainsail integration via Moonraker's update_manager. The project is in early development (v0.1.2-dev), MIT licensed.
+ADB Git Toolkit (ADB GT) is an open-source Git/GitHub workflow toolkit for Klipper-based 3D printers (Voron and similar), with Mainsail integration via Moonraker's update_manager. The project is in early development (v0.2.0), MIT licensed.
 
 The toolkit is a single interactive Bash script: `scripts/adb-git-toolkit.sh`. It presents a numbered menu (`main_menu`) driving one function per action: repository status, log/history, remote info, diff, create backup (commit), push to GitHub, safe pull, switch branch, quick stash, repository health, configuration restore, check for updates, and about. There is no build step or package manager. Verification is done both by exercising the menu against real (throwaway) Git repos and by the `tests/adb-git-toolkit.bats` suite (see below).
 
@@ -41,7 +41,7 @@ This is deliberate: the installed copy at `~/.local/share/adb-git-toolkit` is a 
 
 ## Version bumps
 
-The version string (currently `v0.1.2-dev`) is hardcoded in four places, since there's no build step to generate it from a single source, and the toolkit's own install architecture (see below) rules out having the script resolve a sibling `VERSION` file at runtime -- the installed command is normally invoked via a symlink in `~/.local/bin`, so `$0`/`BASH_SOURCE` point at the symlink's directory, not the real install directory where such a file would live. When bumping the version, update all four:
+The version string (currently `v0.2.0`) is hardcoded in four places, since there's no build step to generate it from a single source, and the toolkit's own install architecture (see below) rules out having the script resolve a sibling `VERSION` file at runtime -- the installed command is normally invoked via a symlink in `~/.local/bin`, so `$0`/`BASH_SOURCE` point at the symlink's directory, not the real install directory where such a file would live. When bumping the version, update all four:
 - `scripts/adb-git-toolkit.sh` (`APP_VERSION=`)
 - `README.md` (Project Status line)
 - `CHANGELOG.md` (`## [Unreleased] - vX.Y.Z` header, plus adding a new dated section)

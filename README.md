@@ -88,7 +88,7 @@ To enable it:
 
 ## Project Status
 
-🚧 Early development (v0.1.2-dev)
+🚧 Early development (v0.2.0)
 
 ## Project Structure
 
