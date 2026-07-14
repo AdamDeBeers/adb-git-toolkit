@@ -47,7 +47,7 @@ A single action that does one of two things depending on the working tree:
 
 ## 10) Repository Health
 
-A read-only summary: repository name, current branch, remote name, upstream tracking branch, last commit, working-tree cleanliness, whether upstream is configured, whether the remote is reachable (`git ls-remote`), and whether `HEAD` is detached.
+A read-only summary: repository name, current branch, remote name, upstream tracking branch, last commit, working-tree cleanliness, whether upstream is configured, whether the remote is reachable (`git ls-remote`), and whether `HEAD` is detached. `[OK]`/`[WARN]` tags (and `ERROR:` messages throughout the toolkit) are colored green/yellow/red when connected to a real terminal, unless `NO_COLOR` is set.
 
 ## 11) Configuration Restore
 

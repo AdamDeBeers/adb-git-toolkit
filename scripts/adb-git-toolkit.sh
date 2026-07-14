@@ -18,6 +18,20 @@ SENSITIVE_FILE_PATTERN='(^|/)(\.env(\.[^/]*)?|secrets\.cfg|moonraker-secrets\.cf
 # dumps or firmware .bin files bloating the repo. 5 MiB.
 LARGE_FILE_THRESHOLD_BYTES=5242880
 
+# Color output for [OK]/[WARN]/ERROR: tags, only when stdout is a real
+# terminal and the user hasn't opted out via NO_COLOR (https://no-color.org/).
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+  COLOR_RED=$'\033[31m'
+  COLOR_GREEN=$'\033[32m'
+  COLOR_YELLOW=$'\033[33m'
+  COLOR_RESET=$'\033[0m'
+else
+  COLOR_RED=""
+  COLOR_GREEN=""
+  COLOR_YELLOW=""
+  COLOR_RESET=""
+fi
+
 pause() {
   echo
   read -rp "Press Enter to continue..."
@@ -33,7 +47,7 @@ header() {
 
 require_git_repo() {
   if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    echo "ERROR: This is not a Git repository."
+    echo "${COLOR_RED}ERROR:${COLOR_RESET} This is not a Git repository."
     pause
     return 1
   fi
@@ -216,7 +230,7 @@ create_backup() {
     git --no-pager log -1 --oneline
   else
     echo
-    echo "ERROR: Backup failed."
+    echo "${COLOR_RED}ERROR:${COLOR_RESET} Backup failed."
   fi
 
   pause
@@ -251,7 +265,7 @@ push_to_github() {
   mapfile -t remotes < <(git remote)
 
   if [[ ${#remotes[@]} -eq 0 ]]; then
-    echo "ERROR: No remote configured."
+    echo "${COLOR_RED}ERROR:${COLOR_RESET} No remote configured."
     echo "Add one with: git remote add origin <url>"
     pause
     return
@@ -285,7 +299,7 @@ push_to_github() {
   branch_name="$(git branch --show-current)"
 
   if [[ -z "$branch_name" ]]; then
-    echo "ERROR: Not on a branch (detached HEAD)."
+    echo "${COLOR_RED}ERROR:${COLOR_RESET} Not on a branch (detached HEAD)."
     pause
     return
   fi
@@ -324,7 +338,7 @@ push_to_github() {
       echo "Push successful. Upstream configured."
     else
       echo
-      echo "ERROR: Push failed."
+      echo "${COLOR_RED}ERROR:${COLOR_RESET} Push failed."
     fi
   else
     echo "Pushing..."
@@ -333,7 +347,7 @@ push_to_github() {
       echo "Push successful."
     else
       echo
-      echo "ERROR: Push failed. You may need to pull first."
+      echo "${COLOR_RED}ERROR:${COLOR_RESET} Push failed. You may need to pull first."
     fi
   fi
 
@@ -411,7 +425,7 @@ switch_branch() {
     echo "Switched to '$selected_branch'."
   else
     echo
-    echo "ERROR: Switch failed."
+    echo "${COLOR_RED}ERROR:${COLOR_RESET} Switch failed."
   fi
 
   pause
@@ -447,7 +461,7 @@ quick_stash() {
       echo "Changes stashed. Use Quick Stash again on a clean tree to pop them."
     else
       echo
-      echo "ERROR: Stash failed."
+      echo "${COLOR_RED}ERROR:${COLOR_RESET} Stash failed."
     fi
 
     pause
@@ -484,7 +498,7 @@ quick_stash() {
     echo "Stash applied."
   else
     echo
-    echo "ERROR: Stash pop failed (possible conflict). Resolve manually."
+    echo "${COLOR_RED}ERROR:${COLOR_RESET} Stash pop failed (possible conflict). Resolve manually."
   fi
 
   pause
@@ -511,34 +525,34 @@ repository_health() {
   echo
 
   if [[ -z "$(git status --porcelain)" ]]; then
-    echo "[OK] Working tree clean"
+    echo "${COLOR_GREEN}[OK]${COLOR_RESET} Working tree clean"
   else
-    echo "[WARN] Local changes detected"
+    echo "${COLOR_YELLOW}[WARN]${COLOR_RESET} Local changes detected"
     git --no-pager status --short
   fi
 
   echo
 
   if [[ -n "$upstream" ]]; then
-    echo "[OK] Upstream configured"
+    echo "${COLOR_GREEN}[OK]${COLOR_RESET} Upstream configured"
   else
-    echo "[WARN] No upstream configured"
+    echo "${COLOR_YELLOW}[WARN]${COLOR_RESET} No upstream configured"
   fi
 
   if [[ -n "$remote_name" ]]; then
     if git ls-remote "$remote_name" >/dev/null 2>&1; then
-      echo "[OK] Remote reachable"
+      echo "${COLOR_GREEN}[OK]${COLOR_RESET} Remote reachable"
     else
-      echo "[WARN] Remote not reachable"
+      echo "${COLOR_YELLOW}[WARN]${COLOR_RESET} Remote not reachable"
     fi
   else
-    echo "[WARN] No remote configured"
+    echo "${COLOR_YELLOW}[WARN]${COLOR_RESET} No remote configured"
   fi
 
   if git symbolic-ref -q HEAD >/dev/null; then
-    echo "[OK] Detached HEAD: No"
+    echo "${COLOR_GREEN}[OK]${COLOR_RESET} Detached HEAD: No"
   else
-    echo "[WARN] Detached HEAD: Yes"
+    echo "${COLOR_YELLOW}[WARN]${COLOR_RESET} Detached HEAD: Yes"
   fi
 
   pause
@@ -630,7 +644,7 @@ restore_configuration() {
     echo "Review with Git Diff, then use Create Backup to commit the restore."
   else
     echo
-    echo "ERROR: Restore failed."
+    echo "${COLOR_RED}ERROR:${COLOR_RESET} Restore failed."
   fi
 
   pause
@@ -667,7 +681,7 @@ setup_repo_files() {
   source_gitattributes="$TOOLKIT_ROOT/examples/gitattributes.klipper"
 
   if [[ ! -f "$source_gitignore" && ! -f "$source_gitattributes" ]]; then
-    echo "ERROR: Toolkit example files not found at $TOOLKIT_ROOT/examples/."
+    echo "${COLOR_RED}ERROR:${COLOR_RESET} Toolkit example files not found at $TOOLKIT_ROOT/examples/."
     echo "Reinstall with install.sh, or copy them manually from the toolkit repo."
     pause
     return
@@ -705,7 +719,7 @@ check_for_updates() {
   echo
 
   if ! git -C "$TOOLKIT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    echo "ERROR: Toolkit installation at $TOOLKIT_ROOT is not a Git checkout."
+    echo "${COLOR_RED}ERROR:${COLOR_RESET} Toolkit installation at $TOOLKIT_ROOT is not a Git checkout."
     echo "Reinstall with install.sh to enable automatic updates."
     pause
     return
@@ -717,7 +731,7 @@ check_for_updates() {
 
   if ! git -C "$TOOLKIT_ROOT" fetch --quiet; then
     echo
-    echo "ERROR: Could not reach the remote repository."
+    echo "${COLOR_RED}ERROR:${COLOR_RESET} Could not reach the remote repository."
     pause
     return
   fi
@@ -735,7 +749,7 @@ check_for_updates() {
 
   if [[ "$local_rev" == "$remote_rev" ]]; then
     echo
-    echo "[OK] Toolkit is up to date ($APP_VERSION)."
+    echo "${COLOR_GREEN}[OK]${COLOR_RESET} Toolkit is up to date ($APP_VERSION)."
     pause
     return
   fi
@@ -768,7 +782,7 @@ check_for_updates() {
     echo "Toolkit updated successfully. Restart it to use the new version."
   else
     echo
-    echo "ERROR: Update failed (fast-forward not possible)."
+    echo "${COLOR_RED}ERROR:${COLOR_RESET} Update failed (fast-forward not possible)."
   fi
 
   pause
