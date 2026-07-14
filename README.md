@@ -48,6 +48,22 @@ adb-git-toolkit
 
 This opens an interactive menu for repository status, history, diffs, backups, pushing to GitHub, safe pulling, repository health checks, configuration restore, and checking for toolkit updates.
 
+## Mainsail Integration
+
+`klipper/moonraker-update.cfg` registers ADB Git Toolkit with Moonraker's `update_manager`, so it shows up in Mainsail under **Machine > Update Manager** with its current commit and an Update button.
+
+To enable it:
+
+1. Install the toolkit with `./install.sh` (this makes `~/.local/share/adb-git-toolkit` a Git checkout Moonraker can track).
+2. Copy `klipper/moonraker-update.cfg` into your Moonraker config directory (e.g. `~/printer_data/config/`).
+3. Add this line to `moonraker.conf`:
+
+   ```ini
+   [include moonraker-update.cfg]
+   ```
+
+4. Restart Moonraker.
+
 ## Roadmap
 
 [x] GitHub Backup
@@ -58,7 +74,7 @@ This opens an interactive menu for repository status, history, diffs, backups, p
 [x] Git Diff
 [x] Configuration Restore
 [x] Automatic updates
-[ ] Mainsail integration
+[x] Mainsail integration
 
 ## Project Status
 
