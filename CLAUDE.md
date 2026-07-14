@@ -33,7 +33,8 @@ This is deliberate: the installed copy at `~/.local/share/adb-git-toolkit` is a 
 - **No abstraction layer over git**: functions shell out directly to `git` (e.g., `git --no-pager status --short`, `git --no-pager diff --color`). Keep this direct style — don't introduce a wrapper/library layer for a script this size.
 - **Destructive actions require typed confirmation, not just Enter**: `restore_configuration()` requires the user to type the word `restore` (not just accept a `[Y/n]` default) before overwriting working-tree files, since it can discard local edits. Follow this pattern for any future action that overwrites files or history.
 - `check_for_updates()` operates on `TOOLKIT_ROOT` (`$HOME/.local/share/adb-git-toolkit`, matching `install.sh`'s `INSTALL_DIR`) — i.e. the *installed* copy, not necessarily the script currently executing. It fetches, compares local `HEAD` against `@{u}`, and only ever fast-forward merges (`git merge --ff-only`) after confirming the install has no local changes.
-- `docs/` and `examples/` are still empty, reserved per the structure described in `README.md`.
+- `docs/usage.md` documents the exact behavior of every menu action (guards, confirmations, what's read-only vs. destructive) — update it alongside any change to `main_menu`'s actions. `docs/troubleshooting.md` covers concrete error messages users hit and their fixes.
+- `examples/` holds a starting-point `.gitignore` for Klipper config repos and an example `moonraker.conf` excerpt showing the update_manager include in context.
 - `klipper/moonraker-update.cfg` registers the toolkit with Moonraker's `update_manager` (`type: git_repo`, pointing at `TOOLKIT_ROOT`, `install_script: install.sh`) so Mainsail's Update Manager panel can show and apply updates too. Keep its `path`/`origin` in sync with `install.sh`'s `INSTALL_DIR` and this repo's GitHub URL if either changes.
 
 ## Windows dev-environment note

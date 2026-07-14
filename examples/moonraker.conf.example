@@ -1,0 +1,18 @@
+# Example excerpt from moonraker.conf showing where the ADB Git
+# Toolkit update_manager entry fits alongside other typical
+# [update_manager] clients (see the Mainsail Integration section of
+# the main README for full setup steps).
+#
+# Copy klipper/moonraker-update.cfg from this repo into the same
+# directory as your moonraker.conf, then add the include line below.
+
+[update_manager]
+enable_auto_refresh: True
+
+[update_manager mainsail]
+type: web
+channel: stable
+repo: mainsail-crew/mainsail
+path: ~/mainsail
+
+[include moonraker-update.cfg]

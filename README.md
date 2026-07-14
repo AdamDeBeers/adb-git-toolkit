@@ -46,7 +46,7 @@ Run the command from inside the Git repository you want to manage (e.g. your Kli
 adb-git-toolkit
 ```
 
-This opens an interactive menu for repository status, history, diffs, backups, pushing to GitHub, safe pulling, repository health checks, configuration restore, and checking for toolkit updates.
+This opens an interactive menu for repository status, history, diffs, backups, pushing to GitHub, safe pulling, repository health checks, configuration restore, and checking for toolkit updates. See [docs/usage.md](docs/usage.md) for a detailed breakdown of what each menu option does, and [docs/troubleshooting.md](docs/troubleshooting.md) if something isn't behaving as expected.
 
 ## Mainsail Integration
 
@@ -62,7 +62,14 @@ To enable it:
    [include moonraker-update.cfg]
    ```
 
+   See [examples/moonraker.conf.example](examples/moonraker.conf.example) for this in context alongside other `[update_manager]` clients.
+
 4. Restart Moonraker.
+
+## Examples
+
+- [examples/gitignore.klipper](examples/gitignore.klipper) — a starting-point `.gitignore` for a Klipper config repo (backup files, logs, secrets).
+- [examples/moonraker.conf.example](examples/moonraker.conf.example) — where the Mainsail Integration include line fits in a real `moonraker.conf`.
 
 ## Roadmap
 
@@ -83,9 +90,9 @@ To enable it:
 ## Project Structure
 
 ```text
-docs/            Documentation
-examples/        Example configurations
-klipper/         Klipper macros and config
+docs/            Documentation (usage reference, troubleshooting)
+examples/        Example configurations (.gitignore, moonraker.conf)
+klipper/         Klipper macros and config (Moonraker update_manager entry)
 scripts/         Core shell scripts
 install.sh       Installer
 uninstall.sh     Uninstaller

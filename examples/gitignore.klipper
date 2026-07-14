@@ -1,0 +1,21 @@
+# Example .gitignore for a Klipper configuration repository.
+# Copy or merge the relevant lines into the .gitignore of the repo
+# you manage with ADB Git Toolkit.
+
+# Backup files Klipper/Mainsail create automatically
+*.bkp
+*.bak
+*.backup
+
+# Logs
+*.log
+
+# Keep secrets (API keys, tokens, passwords) out of version control.
+# Reference them from a separate gitignored file instead, e.g.
+# `[include secrets.cfg]` in printer.cfg.
+secrets.cfg
+moonraker-secrets.cfg
+
+# Editor/OS cruft
+.vscode/
+.DS_Store
