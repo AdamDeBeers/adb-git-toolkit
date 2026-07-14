@@ -8,6 +8,11 @@ APP_VERSION="v0.1.2-dev"
 # Must match INSTALL_DIR in install.sh.
 TOOLKIT_ROOT="$HOME/.local/share/adb-git-toolkit"
 
+# Best-effort filename heuristic used by create_backup() to warn before
+# committing files that look like they might contain secrets. Not
+# exhaustive -- see examples/gitignore.klipper for the recommended fix.
+SENSITIVE_FILE_PATTERN='(^|/)(\.env(\.[^/]*)?|secrets\.cfg|moonraker-secrets\.cfg|[^/]*\.pem|[^/]*\.key|id_rsa(\.pub)?|[^/]*password[^/]*|[^/]*credential[^/]*|[^/]*token[^/]*)$'
+
 pause() {
   echo
   read -rp "Press Enter to continue..."
@@ -99,6 +104,30 @@ create_backup() {
   echo
   git --no-pager status --short
 
+  sensitive_files="$(git status --porcelain -uall | cut -c4- | grep -iE "$SENSITIVE_FILE_PATTERN" || true)"
+
+  if [[ -n "$sensitive_files" ]]; then
+    echo
+    echo "--------------------------------------"
+    echo "WARNING: These files look like they may contain secrets"
+    echo "(API keys, tokens, passwords) and are about to be committed:"
+    echo
+    echo "$sensitive_files" | sed 's/^/  /'
+    echo
+    echo "If this is unintentional, cancel and add them to .gitignore"
+    echo "instead (see examples/gitignore.klipper for a starting point)."
+    echo
+
+    read -rp "Type 'commit secrets' to include them anyway, or press Enter to cancel: " secrets_confirm
+
+    if [[ "$secrets_confirm" != "commit secrets" ]]; then
+      echo
+      echo "Backup cancelled."
+      pause
+      return
+    fi
+  fi
+
   echo
   echo "--------------------------------------"
   echo
@@ -125,7 +154,7 @@ create_backup() {
 
   read -rp "Continue? [Y/n]: " confirm
 
-  if [[ "$confirm" =~ ^[Nn]$ ]]; then
+  if [[ "$confirm" =~ ^[Nn][Oo]?$ ]]; then
     echo
     echo "Backup cancelled."
     pause
@@ -211,7 +240,7 @@ push_to_github() {
 
   read -rp "Push to '$remote_name/$branch_name'? [Y/n]: " confirm
 
-  if [[ "$confirm" =~ ^[Nn]$ ]]; then
+  if [[ "$confirm" =~ ^[Nn][Oo]?$ ]]; then
     echo
     echo "Push cancelled."
     pause
@@ -437,7 +466,7 @@ check_for_updates() {
 
   read -rp "Update now? [Y/n]: " confirm
 
-  if [[ "$confirm" =~ ^[Nn]$ ]]; then
+  if [[ "$confirm" =~ ^[Nn][Oo]?$ ]]; then
     echo
     echo "Update cancelled."
     pause
@@ -506,4 +535,4 @@ main_menu() {
   done
 }
 
-main_menu
+mai

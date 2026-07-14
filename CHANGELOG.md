@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Create Backup now warns and requires typing `commit secrets` to proceed if any changed/untracked file looks like it may contain secrets (`secrets.cfg`, `.env*`, `*.pem`, `*.key`, `id_rsa*`, or filenames containing `password`/`credential`/`token`).
 - Mainsail integration via Moonraker's `update_manager` (`klipper/moonraker-update.cfg`), so the toolkit shows up in Mainsail's Update Manager panel with update status and an Update button.
 - Automatic updates: a "Check for Updates" menu action that fetches and fast-forward merges the installed toolkit, refusing to update if the install has local changes.
 - Configuration Restore menu action to check out tracked files from a chosen previous commit, requiring a typed `restore` confirmation before overwriting the working tree.
@@ -21,3 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Renamed menu labels for consistency ("Git Status" → "Repository Status", "Recent Commits" → "Git Log / History", "Remote URL" → "Remote Information").
 - Switched `git status`/`git log`/`git diff` calls to `--no-pager` so output doesn't hang waiting for a pager.
+
+### Fixed
+
+- Create Backup, Push to GitHub, and Check for Updates confirmation prompts now correctly cancel on `no`/`No` as well as `n`/`N` (previously only a bare `n`/`N` matched, so typing "no" was silently treated as confirmation).
