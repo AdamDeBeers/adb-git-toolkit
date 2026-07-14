@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [v0.3.0] - 2026-07-14
+
 ### Added
 
 - Non-interactive CLI mode: `adb-git-toolkit <action>` (e.g. `status`, `backup`, `push`, `health`) runs one action and exits, plus `--help`/`--version`. Running with no arguments still opens the interactive menu as before. The final "Press Enter to continue" pause is now skipped automatically whenever stdin isn't a real terminal, so scripted/cron invocations never hang.

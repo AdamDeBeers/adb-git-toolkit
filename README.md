@@ -90,7 +90,7 @@ To enable it:
 
 ## Project Status
 
-🚧 Early development (v0.2.0)
+🚧 Early development (v0.3.0)
 
 ## Project Structure
 
