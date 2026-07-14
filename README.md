@@ -55,7 +55,7 @@ This opens an interactive menu for repository status, history, diffs, backups, p
 [x] Installer
 [x] Git History
 [x] Git Diff
-[ ] Configuration Restore
+[x] Configuration Restore
 [ ] Automatic updates
 [ ] Mainsail integration
 

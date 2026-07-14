@@ -294,6 +294,90 @@ repository_health() {
   pause
 }
 
+restore_configuration() {
+  header
+  echo "[ Configuration Restore ]"
+  echo
+
+  require_git_repo || return
+
+  if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Uncommitted changes detected."
+    echo "Commit or discard them first, so a restore doesn't destroy work."
+    echo
+    git --no-pager status --short
+    pause
+    return
+  fi
+
+  mapfile -t commits < <(git log --oneline -10)
+
+  if [[ ${#commits[@]} -eq 0 ]]; then
+    echo "No commits found."
+    pause
+    return
+  fi
+
+  echo "Recent commits:"
+  echo
+  local i=1
+  for line in "${commits[@]}"; do
+    echo "$i) $line"
+    i=$((i + 1))
+  done
+
+  echo
+  read -rp "Restore files from which commit? (number, 0 to cancel): " selection
+
+  if [[ -z "$selection" || "$selection" == "0" ]]; then
+    echo
+    echo "Restore cancelled."
+    pause
+    return
+  fi
+
+  if ! [[ "$selection" =~ ^[0-9]+$ ]] || (( selection < 1 || selection > ${#commits[@]} )); then
+    echo
+    echo "Invalid selection."
+    pause
+    return
+  fi
+
+  selected_line="${commits[$((selection - 1))]}"
+  selected_hash="${selected_line%% *}"
+
+  echo
+  echo "Selected commit:"
+  echo "$selected_line"
+  echo
+  echo "This overwrites all tracked files in the working tree with their"
+  echo "contents from this commit. Commit history is not changed."
+  echo
+
+  read -rp "Type 'restore' to confirm: " confirm
+
+  if [[ "$confirm" != "restore" ]]; then
+    echo
+    echo "Restore cancelled."
+    pause
+    return
+  fi
+
+  echo
+  echo "Restoring files from $selected_hash..."
+
+  if git checkout "$selected_hash" -- .; then
+    echo
+    echo "Files restored from commit $selected_hash."
+    echo "Review with Git Diff, then use Create Backup to commit the restore."
+  else
+    echo
+    echo "ERROR: Restore failed."
+  fi
+
+  pause
+}
+
 main_menu() {
   while true; do
     header
@@ -305,7 +389,8 @@ main_menu() {
     echo "6) Push to GitHub"
     echo "7) Safe Pull"
     echo "8) Repository Health"
-    echo "9) About"
+    echo "9) Configuration Restore"
+    echo "10) About"
     echo "0) Exit"
     echo
     read -rp "Choose option: " choice
@@ -319,7 +404,8 @@ main_menu() {
       6) push_to_github ;;
       7) safe_pull ;;
       8) repository_health ;;
-      9)
+      9) restore_configuration ;;
+      10)
         header
         echo "ADB Git Toolkit"
         echo "Version : $APP_VERSION"
