@@ -13,6 +13,11 @@ TOOLKIT_ROOT="$HOME/.local/share/adb-git-toolkit"
 # exhaustive -- see examples/gitignore.klipper for the recommended fix.
 SENSITIVE_FILE_PATTERN='(^|/)(\.env(\.[^/]*)?|secrets\.cfg|moonraker-secrets\.cfg|[^/]*\.pem|[^/]*\.key|id_rsa(\.pub)?|[^/]*password[^/]*|[^/]*credential[^/]*|[^/]*token[^/]*)$'
 
+# Files at or above this size (bytes) trigger a warning in create_backup()
+# before staging -- catches common accidental commits like klippy.log
+# dumps or firmware .bin files bloating the repo. 5 MiB.
+LARGE_FILE_THRESHOLD_BYTES=5242880
+
 pause() {
   echo
   read -rp "Press Enter to continue..."
@@ -119,6 +124,39 @@ create_backup() {
     read -rp "Type 'commit secrets' to include them anyway, or press Enter to cancel: " secrets_confirm
 
     if [[ "$secrets_confirm" != "commit secrets" ]]; then
+      echo
+      echo "Backup cancelled."
+      pause
+      return
+    fi
+  fi
+
+  large_files=""
+  while IFS= read -r f; do
+    [[ -f "$f" ]] || continue
+    size="$(stat -c%s "$f" 2>/dev/null || echo 0)"
+    if (( size >= LARGE_FILE_THRESHOLD_BYTES )); then
+      size_mb="$(awk "BEGIN { printf \"%.1f\", $size / 1048576 }")"
+      large_files+="  $f (${size_mb} MB)"$'\n'
+    fi
+  done < <(git status --porcelain -uall | cut -c4-)
+
+  if [[ -n "$large_files" ]]; then
+    echo
+    echo "--------------------------------------"
+    echo "WARNING: These files are 5 MB or larger and are about to be"
+    echo "committed. Large files bloat repo size permanently, even if"
+    echo "removed in a later commit:"
+    echo
+    printf '%s' "$large_files"
+    echo
+    echo "If this is unintentional, cancel and add them to .gitignore"
+    echo "instead (see examples/gitignore.klipper for a starting point)."
+    echo
+
+    read -rp "Type 'commit large files' to include them anyway, or press Enter to cancel: " large_confirm
+
+    if [[ "$large_confirm" != "commit large files" ]]; then
       echo
       echo "Backup cancelled."
       pause

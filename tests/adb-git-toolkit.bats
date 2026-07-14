@@ -129,6 +129,30 @@ commit_count() {
   [ "$(commit_count)" -eq 1 ]
 }
 
+@test "create_backup warns and cancels on a file at or above the size threshold" {
+  # LARGE_FILE_THRESHOLD_BYTES is 5 MiB; write a 6 MiB file.
+  dd if=/dev/zero of="$REPO_DIR/klippy.log" bs=1M count=6 status=none
+  run_fn create_backup $'\n'
+  [[ "$output" == *"WARNING"* ]]
+  [[ "$output" == *"klippy.log"* ]]
+  [[ "$output" == *"Backup cancelled"* ]]
+  [ "$(commit_count)" -eq 0 ]
+}
+
+@test "create_backup proceeds past large-file warning with commit large files override" {
+  dd if=/dev/zero of="$REPO_DIR/klippy.log" bs=1M count=6 status=none
+  run_fn create_backup $'commit large files\n\ny\n'
+  [[ "$output" == *"Backup created successfully"* ]]
+  [ "$(commit_count)" -eq 1 ]
+}
+
+@test "create_backup does not warn about files under the size threshold" {
+  dd if=/dev/zero of="$REPO_DIR/printer.cfg" bs=1M count=1 status=none
+  run_fn create_backup $'\ny\n'
+  [[ "$output" != *"WARNING"* ]]
+  [ "$(commit_count)" -eq 1 ]
+}
+
 # --- push_to_github -------------------------------------------------------
 
 @test "push_to_github errors with no remote configured" {

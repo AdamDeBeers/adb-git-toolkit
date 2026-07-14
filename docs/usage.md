@@ -24,6 +24,8 @@ Stages **all** changes (`git add .`) and commits them. Prompts for a commit mess
 
 Before staging, it scans changed/untracked filenames against a best-effort pattern for likely secrets (`secrets.cfg`, `moonraker-secrets.cfg`, `.env*`, `*.pem`, `*.key`, `id_rsa*`, and anything with `password`, `credential`, or `token` in the name). If any match, it warns and requires typing `commit secrets` to proceed — a plain Enter cancels. This is a heuristic, not a security guarantee; the real fix is adding sensitive files to `.gitignore` (see [examples/gitignore.klipper](../examples/gitignore.klipper)).
 
+It also warns if any changed/untracked file is 5 MB or larger — a common accidental commit in Klipper repos (a stray `klippy.log`, a firmware `.bin`) that bloats repo size permanently even if removed in a later commit. Requires typing `commit large files` to proceed; a plain Enter cancels.
+
 ## 6) Push to GitHub
 
 Pushes the current branch to a configured remote. If only one remote is configured, it's used automatically; if there's more than one, you're shown a numbered list (with URLs) and asked which to push to. Refuses to run if there's no remote, no branch (detached HEAD), or uncommitted changes — commit with **Create Backup** first. On the first push for a branch, it sets the upstream (`git push -u`); afterwards it's a plain `git push`.
