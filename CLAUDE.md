@@ -6,11 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ADB Git Toolkit (ADB GT) is an open-source Git/GitHub workflow toolkit for Klipper-based 3D printers (Voron and similar), with Mainsail integration via Moonraker's update_manager. The project is in early development (v0.1.2-dev), MIT licensed.
 
-The toolkit is a single interactive Bash script: `scripts/adb-git-toolkit.sh`. It presents a numbered menu (`main_menu`) driving one function per action: repository status, log/history, remote info, diff, create backup (commit), push to GitHub, safe pull, repository health, configuration restore, check for updates, and about. There is no build step or package manager, and no test suite beyond CI — verification is done by exercising the menu against real (throwaway) Git repos.
+The toolkit is a single interactive Bash script: `scripts/adb-git-toolkit.sh`. It presents a numbered menu (`main_menu`) driving one function per action: repository status, log/history, remote info, diff, create backup (commit), push to GitHub, safe pull, repository health, configuration restore, check for updates, and about. There is no build step or package manager. Verification is done both by exercising the menu against real (throwaway) Git repos and by the `tests/adb-git-toolkit.bats` suite (see below).
 
 ## CI
 
 `.github/workflows/shellcheck.yml` runs ShellCheck (via `ludeeus/action-shellcheck`) over the whole repo on push to `main` and on pull requests. Run `shellcheck install.sh uninstall.sh scripts/adb-git-toolkit.sh` locally before pushing shell changes — e.g. the `@{u}` upstream-ref syntax needs to stay single-quoted (`'@{u}'`), or ShellCheck flags it as SC1083.
+
+`.github/workflows/tests.yml` installs `bats` and runs `tests/adb-git-toolkit.bats` on push to `main` and on pull requests. Run `bats tests/` locally before pushing changes to `scripts/adb-git-toolkit.sh` — the tests source the script's functions (with the trailing `main_menu` call stripped) into a throwaway git repo and drive each menu function by piping canned input to it, the same way the interactive menu receives input. They cover the guard clauses (dirty tree, no remote, detached HEAD, etc.), the `[Y/n]` confirmation parsing, and the secrets-warning heuristic in `create_backup`. When adding a new menu action or changing an existing one's confirmation/guard logic, add or update a corresponding test.
 
 ## Running the toolkit
 

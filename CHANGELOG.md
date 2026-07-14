@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- `tests/adb-git-toolkit.bats` test suite covering guard clauses (dirty tree, no remote, detached HEAD, no commits, etc.), `[Y/n]` confirmation parsing, and the Create Backup secrets-warning heuristic. Wired into CI via `.github/workflows/tests.yml`.
 - Create Backup now warns and requires typing `commit secrets` to proceed if any changed/untracked file looks like it may contain secrets (`secrets.cfg`, `.env*`, `*.pem`, `*.key`, `id_rsa*`, or filenames containing `password`/`credential`/`token`).
 - Mainsail integration via Moonraker's `update_manager` (`klipper/moonraker-update.cfg`), so the toolkit shows up in Mainsail's Update Manager panel with update status and an Update button.
 - Automatic updates: a "Check for Updates" menu action that fetches and fast-forward merges the installed toolkit, refusing to update if the install has local changes.
