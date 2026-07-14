@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- `install.sh`, `uninstall.sh`, and `scripts/adb-git-toolkit.sh` are now tracked as executable in git (they were `100644`, non-executable). This was the cause of two real bugs found during hardware testing: `./install.sh` failing with `Permission denied` on a fresh clone, and Moonraker's `update_manager` permanently flagging the installed copy as "dirty" (since `install.sh`'s own `chmod +x` on the installed checkout created an uncommitted mode diff every time).
+- README installation command had a broken clone URL (missing the GitHub username entirely: `github.com/adb-git-toolkit.git`) from a prior fix that dropped it; corrected to `github.com/AdamDeBeers/adb-git-toolkit.git`.
+
 ## [v0.3.0] - 2026-07-14
 
 ### Added

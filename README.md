@@ -29,7 +29,7 @@ ADB Git Toolkit aims to make Git and GitHub integration effortless for Klipper u
 ## Installation
 
 ```bash
-git clone https://github.com/adb-git-toolkit.git
+git clone https://github.com/AdamDeBeers/adb-git-toolkit.git
 cd adb-git-toolkit
 ./install.sh
 ```
