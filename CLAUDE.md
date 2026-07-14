@@ -39,6 +39,14 @@ This is deliberate: the installed copy at `~/.local/share/adb-git-toolkit` is a 
 - `examples/` holds a starting-point `.gitignore` for Klipper config repos and an example `moonraker.conf` excerpt showing the update_manager include in context.
 - `klipper/moonraker-update.cfg` registers the toolkit with Moonraker's `update_manager` (`type: git_repo`, pointing at `TOOLKIT_ROOT`, `install_script: install.sh`) so Mainsail's Update Manager panel can show and apply updates too. Keep its `path`/`origin` in sync with `install.sh`'s `INSTALL_DIR` and this repo's GitHub URL if either changes.
 
+## Version bumps
+
+The version string (currently `v0.1.2-dev`) is hardcoded in four places, since there's no build step to generate it from a single source, and the toolkit's own install architecture (see below) rules out having the script resolve a sibling `VERSION` file at runtime -- the installed command is normally invoked via a symlink in `~/.local/bin`, so `$0`/`BASH_SOURCE` point at the symlink's directory, not the real install directory where such a file would live. When bumping the version, update all four:
+- `scripts/adb-git-toolkit.sh` (`APP_VERSION=`)
+- `README.md` (Project Status line)
+- `CHANGELOG.md` (`## [Unreleased] - vX.Y.Z` header, plus adding a new dated section)
+- `CLAUDE.md` (Project Overview paragraph, this note)
+
 ## Windows dev-environment note
 
 On Windows/Git Bash without symlink privileges, `ln -s` silently falls back to copying the file instead of creating a real symlink. `TOOLKIT_ROOT`/`check_for_updates()` deliberately avoid resolving the running script's own path (e.g. via `readlink -f "$0"`) for this reason — that approach breaks silently when the installed command isn't a real symlink. Don't reintroduce self-path resolution without accounting for this.

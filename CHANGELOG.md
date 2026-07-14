@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- `examples/gitattributes.klipper`: a starting-point `.gitattributes` normalizing line endings for Klipper config repos edited across Pi/Windows/Mac.
 - Push to GitHub now prompts you to choose which remote to push to when more than one is configured, instead of always using the first one.
 - Switch Branch menu action: lists local branches and checks out the one you pick, refusing to run on a dirty working tree.
 - Quick Stash menu action: stashes uncommitted changes (including untracked files) on a dirty tree, or offers to pop the most recent stash on a clean one.
@@ -24,6 +25,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Repository Status now runs a single combined `git status --short --branch` instead of two separate `git status` invocations.
+- Menu numbering padded for alignment (single-digit entries get a leading space).
 - Renamed menu labels for consistency ("Git Status" → "Repository Status", "Recent Commits" → "Git Log / History", "Remote URL" → "Remote Information").
 - Switched `git status`/`git log`/`git diff` calls to `--no-pager` so output doesn't hang waiting for a pager.
 

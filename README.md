@@ -71,6 +71,7 @@ To enable it:
 ## Examples
 
 - [examples/gitignore.klipper](examples/gitignore.klipper) — a starting-point `.gitignore` for a Klipper config repo (backup files, logs, secrets).
+- [examples/gitattributes.klipper](examples/gitattributes.klipper) — a starting-point `.gitattributes` for a Klipper config repo, normalizing line endings for configs edited across Pi/Windows/Mac.
 - [examples/moonraker.conf.example](examples/moonraker.conf.example) — where the Mainsail Integration include line fits in a real `moonraker.conf`.
 
 ## Roadmap

@@ -1,0 +1,23 @@
+# Example .gitattributes for a Klipper configuration repository.
+# Copy or merge the relevant lines into the .gitattributes of the repo
+# you manage with ADB Git Toolkit.
+#
+# Klipper/Moonraker configs are plain text and commonly get edited from
+# a mix of platforms (Raspberry Pi over SSH, Windows/Mac desktops via
+# Mainsail's editor or a local text editor). Normalizing line endings
+# avoids noisy diffs and false "modified" flags from Repository Status
+# / Git Diff that are really just CRLF/LF churn.
+
+# Normalize all text files to LF in the repository, regardless of the
+# platform they were checked out or edited on.
+* text=auto eol=lf
+
+# Klipper/Moonraker config files are always text.
+*.cfg text eol=lf
+*.conf text eol=lf
+
+# Don't touch binary files if any end up in the repo (e.g. exported
+# calibration plots).
+*.png binary
+*.jpg binary
+*.pdf binary

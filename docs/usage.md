@@ -4,7 +4,7 @@ Detailed behavior of each `adb-git-toolkit` menu option. All actions except **Ab
 
 ## 1) Repository Status
 
-Runs `git status --short` followed by `git status --branch --short`. Read-only.
+Runs `git status --short --branch`. Read-only.
 
 ## 2) Git Log / History
 

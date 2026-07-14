@@ -40,9 +40,7 @@ show_status() {
   echo
   require_git_repo || return
 
-  git --no-pager status --short
-  echo
-  git status --branch --short
+  git --no-pager status --short --branch
 
   pause
 }
@@ -663,20 +661,20 @@ check_for_updates() {
 main_menu() {
   while true; do
     header
-    echo "1) Repository Status"
-    echo "2) Git Log / History"
-    echo "3) Remote Information"
-    echo "4) Git Diff"
-    echo "5) Create Backup"
-    echo "6) Push to GitHub"
-    echo "7) Safe Pull"
-    echo "8) Switch Branch"
-    echo "9) Quick Stash"
+    echo " 1) Repository Status"
+    echo " 2) Git Log / History"
+    echo " 3) Remote Information"
+    echo " 4) Git Diff"
+    echo " 5) Create Backup"
+    echo " 6) Push to GitHub"
+    echo " 7) Safe Pull"
+    echo " 8) Switch Branch"
+    echo " 9) Quick Stash"
     echo "10) Repository Health"
     echo "11) Configuration Restore"
     echo "12) Check for Updates"
     echo "13) About"
-    echo "0) Exit"
+    echo " 0) Exit"
     echo
     read -rp "Choose option: " choice
 
