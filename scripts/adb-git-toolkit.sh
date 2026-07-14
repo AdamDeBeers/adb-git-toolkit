@@ -3,7 +3,7 @@
 set -u
 
 APP_NAME="ADB Git Toolkit"
-APP_VERSION="v0.1.1-dev"
+APP_VERSION="v0.1.2-dev"
 
 # Must match INSTALL_DIR in install.sh.
 TOOLKIT_ROOT="$HOME/.local/share/adb-git-toolkit"
