@@ -20,7 +20,7 @@ Shows unstaged/staged changes (`git diff --color`), or "Working tree is clean." 
 
 ## 5) Create Backup
 
-Stages **all** changes (`git add .`) and commits them. Prompts for a commit message, defaulting to `Backup <date> <time>` if left blank, and asks for confirmation before committing. Does nothing if the working tree is already clean.
+Stages **all** changes (`git add .`) and commits them. Shows the modified-files list plus a full diff of tracked changes (untracked new files only show as filenames, since there's nothing to diff against). Prompts for a commit message, defaulting to `Backup <date> <time>` if left blank, and asks for confirmation before committing. Does nothing if the working tree is already clean.
 
 Before staging, it scans changed/untracked filenames against a best-effort pattern for likely secrets (`secrets.cfg`, `moonraker-secrets.cfg`, `.env*`, `*.pem`, `*.key`, `id_rsa*`, and anything with `password`, `credential`, or `token` in the name). If any match, it warns and requires typing `commit secrets` to proceed — a plain Enter cancels. This is a heuristic, not a security guarantee; the real fix is adding sensitive files to `.gitignore` (see [examples/gitignore.klipper](../examples/gitignore.klipper)).
 
@@ -51,7 +51,7 @@ A read-only summary: repository name, current branch, remote name, upstream trac
 
 ## 11) Configuration Restore
 
-Lets you pick one of the last 10 commits and checks out **all tracked files** from that commit into the working tree (`git checkout <commit> -- .`). This does not rewrite history — it only changes working-tree file contents, staged and ready to review.
+Lets you pick one of the last 10 commits and checks out **all tracked files** from that commit into the working tree (`git checkout <commit> -- .`). This does not rewrite history — it only changes working-tree file contents, staged and ready to review. Before asking for confirmation, it shows a diff preview of exactly what would change.
 
 Safety rails:
 - Refuses to run if the working tree already has uncommitted changes (commit or discard them first).

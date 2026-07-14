@@ -35,6 +35,12 @@ commit_count() {
   git -C "$REPO_DIR" log --oneline 2>/dev/null | wc -l | tr -d ' '
 }
 
+# Strips ANSI color escape codes (git --color always emits them, even when
+# not attached to a TTY) so diff-preview assertions can match plain text.
+strip_ansi() {
+  sed -E 's/\x1b\[[0-9;]*m//g'
+}
+
 # --- require_git_repo ---------------------------------------------------
 
 @test "require_git_repo fails outside a git repository" {
@@ -153,6 +159,25 @@ commit_count() {
   [ "$(commit_count)" -eq 1 ]
 }
 
+@test "create_backup shows a diff preview of tracked changes" {
+  echo "line one" > "$REPO_DIR/printer.cfg"
+  git -C "$REPO_DIR" add printer.cfg
+  git -C "$REPO_DIR" commit -qm "add printer.cfg"
+  echo "line two" >> "$REPO_DIR/printer.cfg"
+  run_fn create_backup $'\ny\n'
+  clean_output="$(strip_ansi <<< "$output")"
+  [[ "$clean_output" == *"Diff of tracked changes"* ]]
+  [[ "$clean_output" == *"+line two"* ]]
+  [ "$(commit_count)" -eq 2 ]
+}
+
+@test "create_backup does not show a diff section for untracked-only changes" {
+  echo "brand new file" > "$REPO_DIR/newfile.cfg"
+  run_fn create_backup $'\ny\n'
+  [[ "$output" != *"Diff of tracked changes"* ]]
+  [ "$(commit_count)" -eq 1 ]
+}
+
 # --- push_to_github -------------------------------------------------------
 
 @test "push_to_github errors with no remote configured" {
@@ -248,6 +273,22 @@ commit_count() {
   run_fn restore_configuration $'2\nrestore\n'
   [[ "$output" == *"Files restored"* ]]
   [ "$(cat "$REPO_DIR/file.txt")" = "v1" ]
+}
+
+@test "restore_configuration shows a diff preview before the typed confirmation" {
+  echo "v1" > "$REPO_DIR/file.txt"
+  git -C "$REPO_DIR" add file.txt
+  git -C "$REPO_DIR" commit -qm "v1"
+  echo "v2" > "$REPO_DIR/file.txt"
+  git -C "$REPO_DIR" add file.txt
+  git -C "$REPO_DIR" commit -qm "v2"
+
+  run_fn restore_configuration $'2\nnotrestore\n'
+  clean_output="$(strip_ansi <<< "$output")"
+  [[ "$clean_output" == *"Preview of what this restore would change"* ]]
+  [[ "$clean_output" == *"-v2"* ]]
+  [[ "$clean_output" == *"+v1"* ]]
+  [[ "$clean_output" == *"Restore cancelled"* ]]
 }
 
 # --- setup_repo_files -----------------------------------------------------

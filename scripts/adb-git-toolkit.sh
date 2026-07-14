@@ -107,6 +107,13 @@ create_backup() {
   echo
   git --no-pager status --short
 
+  if [[ -n "$(git diff --name-only)" ]]; then
+    echo
+    echo "Diff of tracked changes:"
+    echo
+    git --no-pager diff --color
+  fi
+
   sensitive_files="$(git status --porcelain -uall | cut -c4- | grep -iE "$SENSITIVE_FILE_PATTERN" || true)"
 
   if [[ -n "$sensitive_files" ]]; then
@@ -593,6 +600,14 @@ restore_configuration() {
   echo "Selected commit:"
   echo "$selected_line"
   echo
+
+  if [[ -n "$(git diff HEAD "$selected_hash" -- .)" ]]; then
+    echo "Preview of what this restore would change:"
+    echo
+    git --no-pager diff --color HEAD "$selected_hash" -- .
+    echo
+  fi
+
   echo "This overwrites all tracked files in the working tree with their"
   echo "contents from this commit. Commit history is not changed."
   echo
