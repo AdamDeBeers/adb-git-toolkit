@@ -5,6 +5,9 @@ set -u
 APP_NAME="ADB Git Toolkit"
 APP_VERSION="v0.1.1-dev"
 
+# Must match INSTALL_DIR in install.sh.
+TOOLKIT_ROOT="$HOME/.local/share/adb-git-toolkit"
+
 pause() {
   echo
   read -rp "Press Enter to continue..."
@@ -378,6 +381,81 @@ restore_configuration() {
   pause
 }
 
+check_for_updates() {
+  header
+  echo "[ Check for Updates ]"
+  echo
+
+  if ! git -C "$TOOLKIT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "ERROR: Toolkit installation at $TOOLKIT_ROOT is not a Git checkout."
+    echo "Reinstall with install.sh to enable automatic updates."
+    pause
+    return
+  fi
+
+  echo "Toolkit location: $TOOLKIT_ROOT"
+  echo
+  echo "Checking for updates..."
+
+  if ! git -C "$TOOLKIT_ROOT" fetch --quiet; then
+    echo
+    echo "ERROR: Could not reach the remote repository."
+    pause
+    return
+  fi
+
+  branch_name="$(git -C "$TOOLKIT_ROOT" branch --show-current)"
+  local_rev="$(git -C "$TOOLKIT_ROOT" rev-parse HEAD)"
+  remote_rev="$(git -C "$TOOLKIT_ROOT" rev-parse '@{u}' 2>/dev/null || true)"
+
+  if [[ -z "$remote_rev" ]]; then
+    echo
+    echo "No upstream configured for '$branch_name'. Cannot check for updates."
+    pause
+    return
+  fi
+
+  if [[ "$local_rev" == "$remote_rev" ]]; then
+    echo
+    echo "[OK] Toolkit is up to date ($APP_VERSION)."
+    pause
+    return
+  fi
+
+  echo
+  echo "Update available:"
+  echo
+  git -C "$TOOLKIT_ROOT" --no-pager log --oneline "$local_rev..$remote_rev"
+  echo
+
+  if [[ -n "$(git -C "$TOOLKIT_ROOT" status --porcelain)" ]]; then
+    echo "Local changes detected in the toolkit installation."
+    echo "Resolve them manually before updating."
+    pause
+    return
+  fi
+
+  read -rp "Update now? [Y/n]: " confirm
+
+  if [[ "$confirm" =~ ^[Nn]$ ]]; then
+    echo
+    echo "Update cancelled."
+    pause
+    return
+  fi
+
+  echo
+  if git -C "$TOOLKIT_ROOT" merge --ff-only "$remote_rev" --quiet; then
+    echo
+    echo "Toolkit updated successfully. Restart it to use the new version."
+  else
+    echo
+    echo "ERROR: Update failed (fast-forward not possible)."
+  fi
+
+  pause
+}
+
 main_menu() {
   while true; do
     header
@@ -390,7 +468,8 @@ main_menu() {
     echo "7) Safe Pull"
     echo "8) Repository Health"
     echo "9) Configuration Restore"
-    echo "10) About"
+    echo "10) Check for Updates"
+    echo "11) About"
     echo "0) Exit"
     echo
     read -rp "Choose option: " choice
@@ -405,7 +484,8 @@ main_menu() {
       7) safe_pull ;;
       8) repository_health ;;
       9) restore_configuration ;;
-      10)
+      10) check_for_updates ;;
+      11)
         header
         echo "ADB Git Toolkit"
         echo "Version : $APP_VERSION"

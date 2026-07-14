@@ -18,6 +18,7 @@ ADB Git Toolkit aims to make Git and GitHub integration effortless for Klipper u
 - Safe Pull
 - Repository Health check
 - Configuration Restore
+- Automatic updates
 - One-command installer
 - Mainsail integration
 
@@ -29,7 +30,7 @@ cd adb-git-toolkit
 ./install.sh
 ```
 
-This installs the toolkit to `~/.local/share/adb-git-toolkit` and links the `adb-git-toolkit` command into `~/.local/bin`. If that directory isn't already on your `PATH`, the installer prints the line to add to your shell profile.
+This clones the toolkit into `~/.local/share/adb-git-toolkit` (tracking the same Git remote you cloned from) and links the `adb-git-toolkit` command into `~/.local/bin`. If that directory isn't already on your `PATH`, the installer prints the line to add to your shell profile. Because the install is a Git checkout, the toolkit's "Check for Updates" menu option can pull new releases in place.
 
 To remove it again:
 
@@ -45,7 +46,7 @@ Run the command from inside the Git repository you want to manage (e.g. your Kli
 adb-git-toolkit
 ```
 
-This opens an interactive menu for repository status, history, diffs, backups, pushing to GitHub, safe pulling, and repository health checks.
+This opens an interactive menu for repository status, history, diffs, backups, pushing to GitHub, safe pulling, repository health checks, configuration restore, and checking for toolkit updates.
 
 ## Roadmap
 
@@ -56,7 +57,7 @@ This opens an interactive menu for repository status, history, diffs, backups, p
 [x] Git History
 [x] Git Diff
 [x] Configuration Restore
-[ ] Automatic updates
+[x] Automatic updates
 [ ] Mainsail integration
 
 ## Project Status

@@ -20,14 +20,31 @@ fi
 echo "Installing ADB Git Toolkit..."
 echo
 
-mkdir -p "$INSTALL_DIR"
-cp "$SOURCE_SCRIPT" "$INSTALL_DIR/adb-git-toolkit.sh"
-chmod +x "$INSTALL_DIR/adb-git-toolkit.sh"
+REMOTE_URL="$(git -C "$REPO_ROOT" remote get-url origin 2>/dev/null || true)"
+
+if [[ -n "$REMOTE_URL" ]]; then
+  if [[ -d "$INSTALL_DIR/.git" ]]; then
+    echo "Updating existing installation..."
+    git -C "$INSTALL_DIR" pull --quiet
+  else
+    rm -rf "$INSTALL_DIR"
+    echo "Cloning $REMOTE_URL..."
+    git clone --quiet "$REMOTE_URL" "$INSTALL_DIR"
+  fi
+else
+  echo "No Git remote found; installing a plain copy (automatic updates unavailable)."
+  rm -rf "$INSTALL_DIR"
+  mkdir -p "$INSTALL_DIR/scripts"
+  cp "$SOURCE_SCRIPT" "$INSTALL_DIR/scripts/adb-git-toolkit.sh"
+fi
+
+chmod +x "$INSTALL_DIR/scripts/adb-git-toolkit.sh"
 
 mkdir -p "$BIN_DIR"
-ln -sf "$INSTALL_DIR/adb-git-toolkit.sh" "$BIN_DIR/$COMMAND_NAME"
+ln -sf "$INSTALL_DIR/scripts/adb-git-toolkit.sh" "$BIN_DIR/$COMMAND_NAME"
 chmod +x "$BIN_DIR/$COMMAND_NAME"
 
+echo
 echo "Installed to: $INSTALL_DIR"
 echo "Command:      $BIN_DIR/$COMMAND_NAME"
 echo
@@ -42,6 +59,6 @@ case ":$PATH:" in
     echo
     echo "  export PATH=\"$BIN_DIR:\$PATH\""
     echo
-    echo "Then restart your shell, or run it directly: $INSTALL_DIR/adb-git-toolkit.sh"
+    echo "Then restart your shell, or run it directly: $INSTALL_DIR/scripts/adb-git-toolkit.sh"
     ;;
 esac
