@@ -152,6 +152,32 @@ commit_count() {
   [[ "$output" == *"Push cancelled"* ]]
 }
 
+@test "push_to_github with a single remote does not prompt for a selection" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  git -C "$REPO_DIR" remote add origin https://example.invalid/repo.git
+  run_fn push_to_github $'no\n'
+  [[ "$output" != *"Multiple remotes configured"* ]]
+  [[ "$output" == *"Remote : origin"* ]]
+}
+
+@test "push_to_github with multiple remotes prompts and accepts a valid selection" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  # git remote lists remotes alphabetically, so 'backup' sorts before 'origin'.
+  git -C "$REPO_DIR" remote add origin https://example.invalid/origin.git
+  git -C "$REPO_DIR" remote add backup https://example.invalid/backup.git
+  run_fn push_to_github $'1\nno\n'
+  [[ "$output" == *"Multiple remotes configured"* ]]
+  [[ "$output" == *"Remote : backup"* ]]
+}
+
+@test "push_to_github with multiple remotes rejects an invalid selection" {
+  git -C "$REPO_DIR" commit --allow-empty -qm init
+  git -C "$REPO_DIR" remote add origin https://example.invalid/origin.git
+  git -C "$REPO_DIR" remote add backup https://example.invalid/backup.git
+  run_fn push_to_github $'9\n'
+  [[ "$output" == *"Invalid selection"* ]]
+}
+
 # --- safe_pull --------------------------------------------------------------
 
 @test "safe_pull refuses to run with local changes" {

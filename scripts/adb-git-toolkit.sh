@@ -205,13 +205,38 @@ push_to_github() {
 
   require_git_repo || return
 
-  remote_name="$(git remote | head -n 1)"
+  mapfile -t remotes < <(git remote)
 
-  if [[ -z "$remote_name" ]]; then
+  if [[ ${#remotes[@]} -eq 0 ]]; then
     echo "ERROR: No remote configured."
     echo "Add one with: git remote add origin <url>"
     pause
     return
+  fi
+
+  if [[ ${#remotes[@]} -eq 1 ]]; then
+    remote_name="${remotes[0]}"
+  else
+    echo "Multiple remotes configured:"
+    echo
+    local i=1
+    for r in "${remotes[@]}"; do
+      echo "$i) $r ($(git remote get-url "$r"))"
+      i=$((i + 1))
+    done
+    echo
+
+    read -rp "Push to which remote? (number): " remote_selection
+
+    if ! [[ "$remote_selection" =~ ^[0-9]+$ ]] || (( remote_selection < 1 || remote_selection > ${#remotes[@]} )); then
+      echo
+      echo "Invalid selection."
+      pause
+      return
+    fi
+
+    remote_name="${remotes[$((remote_selection - 1))]}"
+    echo
   fi
 
   branch_name="$(git branch --show-current)"
@@ -535,4 +560,4 @@ main_menu() {
   done
 }
 
-mai
+main_menu
