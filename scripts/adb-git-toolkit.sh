@@ -166,6 +166,80 @@ safe_pull() {
   pause
 }
 
+push_to_github() {
+  header
+  echo "[ Push to GitHub ]"
+  echo
+
+  require_git_repo || return
+
+  remote_name="$(git remote | head -n 1)"
+
+  if [[ -z "$remote_name" ]]; then
+    echo "ERROR: No remote configured."
+    echo "Add one with: git remote add origin <url>"
+    pause
+    return
+  fi
+
+  branch_name="$(git branch --show-current)"
+
+  if [[ -z "$branch_name" ]]; then
+    echo "ERROR: Not on a branch (detached HEAD)."
+    pause
+    return
+  fi
+
+  if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Uncommitted changes detected:"
+    echo
+    git --no-pager status --short
+    echo
+    echo "Create a backup (commit) first, then push."
+    pause
+    return
+  fi
+
+  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
+
+  echo "Remote : $remote_name"
+  echo "Branch : $branch_name"
+  echo
+
+  read -rp "Push to '$remote_name/$branch_name'? [Y/n]: " confirm
+
+  if [[ "$confirm" =~ ^[Nn]$ ]]; then
+    echo
+    echo "Push cancelled."
+    pause
+    return
+  fi
+
+  echo
+
+  if [[ -z "$upstream" ]]; then
+    echo "No upstream set. Pushing with 'git push -u $remote_name $branch_name'..."
+    if git push -u "$remote_name" "$branch_name"; then
+      echo
+      echo "Push successful. Upstream configured."
+    else
+      echo
+      echo "ERROR: Push failed."
+    fi
+  else
+    echo "Pushing..."
+    if git push; then
+      echo
+      echo "Push successful."
+    else
+      echo
+      echo "ERROR: Push failed. You may need to pull first."
+    fi
+  fi
+
+  pause
+}
+
 repository_health() {
   header
   echo "[ Repository Health ]"
@@ -242,13 +316,7 @@ main_menu() {
       3) show_remote ;;
       4) show_diff ;;
       5) create_backup ;;
-      6)
-        header
-        echo "[ Push to GitHub ]"
-        echo
-        echo "Coming soon..."
-        pause
-        ;;
+      6) push_to_github ;;
       7) safe_pull ;;
       8) repository_health ;;
       9)
