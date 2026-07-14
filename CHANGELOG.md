@@ -1,0 +1,23 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+## [Unreleased] - v0.1.1-dev
+
+### Added
+
+- Mainsail integration via Moonraker's `update_manager` (`klipper/moonraker-update.cfg`), so the toolkit shows up in Mainsail's Update Manager panel with update status and an Update button.
+- Automatic updates: a "Check for Updates" menu action that fetches and fast-forward merges the installed toolkit, refusing to update if the install has local changes.
+- Configuration Restore menu action to check out tracked files from a chosen previous commit, requiring a typed `restore` confirmation before overwriting the working tree.
+- Push to GitHub menu action, including first-push upstream setup and a check for uncommitted changes before pushing.
+- `install.sh` / `uninstall.sh`: install the toolkit as an `adb-git-toolkit` command in `~/.local/bin`, cloning it (rather than copying) so it can be tracked and updated in place.
+- Git Diff, Create Backup (commit), Safe Pull, and About menu actions.
+- Repository Health check (branch, remote, upstream, and remote-reachability status).
+- Initial project structure: interactive Bash menu (`scripts/adb-git-toolkit.sh`) with Repository Status, Git Log/History, and Remote Information.
+
+### Changed
+
+- Renamed menu labels for consistency ("Git Status" → "Repository Status", "Recent Commits" → "Git Log / History", "Remote URL" → "Remote Information").
+- Switched `git status`/`git log`/`git diff` calls to `--no-pager` so output doesn't hang waiting for a pager.
